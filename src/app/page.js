@@ -1,103 +1,211 @@
-import Image from "next/image";
+'use client'
+import { useState, useEffect } from 'react';
+import { format, startOfWeek, addDays, eachDayOfInterval, isToday, isSameDay, addWeeks, subWeeks } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date()));
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [completedDates, setCompletedDates] = useState([]);
+  const [currentStep, setCurrentStep] = useState('calendar');
+  const [answers, setAnswers] = useState({});
+  
+  // Gerar dias da semana atual
+  const weekDays = eachDayOfInterval({
+    start: currentWeekStart,
+    end: addDays(currentWeekStart, 6)
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Navegação entre semanas
+  const handlePrevWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
+  const handleNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+
+  const handleComplete = () => {
+    if (!completedDates.some(d => isSameDay(d, selectedDate))) {
+      setCompletedDates([...completedDates, selectedDate]);
+    }
+    setCurrentStep('calendar');
+  };
+  
+  const formattedDate = format(selectedDate, "EEEE dd/MM/yyyy", { 
+    locale: ptBR 
+  });
+
+  // Componente de Perguntas
+  const QuestionStep = () => {
+    const questions = [
+      "Qual motivo me faria levantar da cama e por quê?",
+      "Uma Motivação pra hoje",
+      "Uma murmuração para esquecer",
+    ];
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-sm">
+        <div className='mb-10 flex items-center gap-4'>
+          <button
+            onClick={() => setCurrentStep('calendar')}
+            className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+            style={{ color: '#FFFFFF' }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+
+          <h3 className="font-nunito font-bold text-xl text-black">
+          {formattedDate.split(' ').map((word, index) => (
+            <span key={index}>
+              {index === 0 ? 
+                word.charAt(0).toUpperCase() + word.slice(1) + ' - ' : 
+                word
+              }
+              {index === 0}
+            </span>
+          ))}
+        </h3>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        {questions.map((question, index) => (
+          <div key={index} className="mb-6">
+            <label className="block text-gray-700 mb-2 font-medium">{question}</label>
+            <textarea
+              onChange={(e) => setAnswers({...answers, [index]: e.target.value})}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yelllow-500 focus:border-transparent"
+              rows="2"
+              placeholder="Escreva sua resposta..."
+            />
+          </div>
+        ))}
+
+        <button
+          onClick={() => setCurrentStep('reflection')}
+          className="w-full bg-[#FFCB69] text-white py-3 rounded-lg font-bold transition-colors cursor-pointer"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Avançar
+        </button>
+      </div>
+    );
+  };
+
+   // Componente de Reflexão
+   const ReflectionStep = () => {
+    const reflectionText = `Reflexão do dia (${format(selectedDate, 'dd/MM/yyyy')}):\n\n"Porque eu bem sei os pensamentos que penso de vós, diz o Senhor; pensamentos de paz e não de mal, para vos dar o fim que esperais." (Jeremias 29:11)\n\nDeixe esta verdade guiar seu dia...`;
+
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-sm">
+        <div className='mb-10 flex items-center gap-4'>
+          <button
+            onClick={() => setCurrentStep('questions')}
+            className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+            style={{ color: '#FFFFFF' }}
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+
+          <h3 className="font-nunito font-bold text-xl text-black">
+          {formattedDate.split(' ').map((word, index) => (
+            <span key={index}>
+              {index === 0 ? 
+                word.charAt(0).toUpperCase() + word.slice(1) + ' - ' : 
+                word
+              }
+              {index === 0}
+            </span>
+          ))}
+          </h3>
+        </div>
+        <div className="whitespace-pre-line mb-6 text-gray-700 leading-relaxed">
+          {reflectionText}
+        </div>
+        
+        <button
+          onClick={handleComplete}
+          className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium transition-colors"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Concluir leitura de hoje
+        </button>
+      </div>
+    );
+  };
+
+  // Componente do calendário horizontal
+  const Calendar = () => (
+    <div className="bg-white p-6 rounded-xl shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={handlePrevWeek}
+          className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+          style={{ color: '#FFFFFF' }}
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <div className="flex flex-col items-center gap-2">
+          <div className="font-nunito font-bold text-black text-lg">
+            {format(currentWeekStart, 'MMMM yyyy', { locale: ptBR })}
+          </div>
+
+          <div className="flex gap-2">
+            {weekDays.map((day, index) => {
+              const isCompleted = completedDates.some(d => isSameDay(d, day));
+              const isTodayDate = isToday(day);
+              const isSelected = isSameDay(day, selectedDate);
+              
+              return (
+                <button
+                key={index}
+                onClick={() => setSelectedDate(day)}
+                className={`
+                  w-12 h-12 flex flex-col items-center justify-center rounded-lg text-sm transition-all relative
+                  ${isTodayDate ? 'font-bold' : 'font-semibold'}
+                  ${isSelected && !isTodayDate ? 'bg-gray-200' : 'bg-white'}
+                `}
+                style={{
+                  backgroundColor: isTodayDate ? '#FFCB69' : undefined,
+                  color: isTodayDate ? 'white' : 'black'
+                }}
+              >
+                <span className="font-nunito">
+                  {format(day, 'eee', { locale: ptBR }).slice(0, 3)}
+                </span>
+                <span className="font-poppins text-base">
+                  {format(day, 'd')}
+                </span>
+                {isCompleted && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                    <div className="w-3 h-3 bg-green-500 rounded-full" />
+                  </div>
+                )}
+              </button>
+              );
+            })}
+  
+          </div>
+        </div>
+
+        <button
+          onClick={handleNextWeek}
+          className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+          style={{ color: '#FFFFFF' }}
+        >
+          <ChevronRightIcon className="w-5 h-5" />
+        </button>
+      </div>
+
+      <button
+        onClick={() => setCurrentStep('questions')}
+        className="w-full py-3 rounded-lg font-bold text-white hover:bg-yellow-600 transition-colors cursor-pointer"
+        style={{ backgroundColor: '#FFCB69' }}
+      >
+        Começar leitura
+      </button>
+    </div>
+  );
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Bom dia! A paz do Senhor</h1>
+      
+      {currentStep === 'calendar' && <Calendar />}
+      {currentStep === 'questions' && <QuestionStep />}
+      {currentStep === 'reflection' && <ReflectionStep />}
     </div>
   );
 }
