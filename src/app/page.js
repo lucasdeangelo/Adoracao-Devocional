@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { format, startOfWeek, addDays, eachDayOfInterval, isToday, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import ReactMarkdown from 'react-markdown';
 
 export default function Home() {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date()));
@@ -85,8 +86,34 @@ export default function Home() {
   };
 
    // Componente de Reflexão
-   const ReflectionStep = () => {
-    const reflectionText = `Reflexão do dia (${format(selectedDate, 'dd/MM/yyyy')}):\n\n"Porque eu bem sei os pensamentos que penso de vós, diz o Senhor; pensamentos de paz e não de mal, para vos dar o fim que esperais." (Jeremias 29:11)\n\nDeixe esta verdade guiar seu dia...`;
+   const ShowText = () => {
+    const [content, setContent] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    
+    useEffect(() => {
+      const fetchReflection = async () => {
+        try {
+          const dateString = format(selectedDate, 'yyyy-MM-dd');
+          const response = await fetch(`/reflections/${dateString}.md`)
+
+  
+          if (!response.ok) {
+            setContent('# Reflexão do Dia\n\nVolte amanhã para uma nova reflexão! 🙏');
+            return;
+          }
+  
+          const text = await response.text();
+          setContent(text);
+        } catch (error) {
+          setContent('# Erro\n\nNão foi possível carregar a reflexão');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+  
+      fetchReflection();
+    });
+  
 
     return (
       <div className="bg-white p-6 rounded-xl shadow-sm">
@@ -111,9 +138,27 @@ export default function Home() {
           ))}
           </h3>
         </div>
-        <div className="whitespace-pre-line mb-6 text-gray-700 leading-relaxed">
-          {reflectionText}
-        </div>
+        {isLoading ? (
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        ) : (
+          <ReactMarkdown
+            
+            components={{
+              h1: ({ node, ...props }) => <h1 className="text-3xl text-black font-bold mb-4" {...props} />,
+              h2: ({ node, ...props }) => <h2 className="text-xl text-black font-bold mb-4" {...props} />,
+              h3: ({ node, ...props }) => <h3 className="text-lg text-black font-bold mb-4" {...props} />,
+              p: ({ node, ...props }) => <p className="text-gray-700 mb-4 leading-relaxed" {...props} />, 
+              ul: ({ node, ...props }) => <h1 className="text-gray-700 font-medium mb-4" {...props} />,
+              blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#FFCB69] pl-4 bg-gray-50  my-4 text-gray-600" {...props} />,
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        )}
         
         <button
           onClick={handleComplete}
@@ -205,7 +250,7 @@ export default function Home() {
       
       {currentStep === 'calendar' && <Calendar />}
       {currentStep === 'questions' && <QuestionStep />}
-      {currentStep === 'reflection' && <ReflectionStep />}
+      {currentStep === 'reflection' && <ShowText />}
     </div>
   );
 }
