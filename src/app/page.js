@@ -11,6 +11,7 @@ export default function Home() {
   const [completedDates, setCompletedDates] = useState([]);
   const [currentStep, setCurrentStep] = useState('calendar');
   const [answers, setAnswers] = useState({});
+  const [contentAvailable, setContentAvailable] = useState(false)
   
   // Gerar dias da semana atual
   const weekDays = eachDayOfInterval({
@@ -21,13 +22,42 @@ export default function Home() {
   // Navegação entre semanas
   const handlePrevWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
   const handleNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
-
-  const handleComplete = () => {
-    if (!completedDates.some(d => isSameDay(d, selectedDate))) {
-      setCompletedDates([...completedDates, selectedDate]);
+  
+  useEffect(() => {
+    // Carregar dados salvos
+    const savedData = localStorage.getItem('devocionalProgress')
+    if (savedData) {
+      const parsedData = JSON.parse(savedData)
+      setCompletedDates(parsedData.completedDates.map(date => new Date(date)))
+      setAnswers(parsedData.answers)
     }
-    setCurrentStep('calendar');
+  }, [])
+  
+  useEffect(() => {
+    // Salvar dados automaticamente
+    const dataToSave = {
+      completedDates: completedDates.map(date => date.toISOString()),
+      answers
+    }
+    localStorage.setItem('devocionalProgress', JSON.stringify(dataToSave))
+  }, [completedDates, answers])
+  
+  const handleComplete = () => {
+    const alreadyCompleted = completedDates.some(d => isSameDay(d, selectedDate))
+  
+  if (!alreadyCompleted) {
+    setCompletedDates([...completedDates, selectedDate])
+  }
+  
+  setCurrentStep('calendar')
+
   };
+
+  const handleCompletion = () => {
+    if (contentAvailable) {
+      handleComplete()
+    }
+  }
   
   const formattedDate = format(selectedDate, "EEEE dd/MM/yyyy", { 
     locale: ptBR 
@@ -99,13 +129,16 @@ export default function Home() {
   
           if (!response.ok) {
             setContent('# Reflexão do Dia\n\nVolte amanhã para uma nova reflexão! 🙏');
+            setContentAvailable(false) //Bloqueia a conclusão
             return;
           }
   
           const text = await response.text();
           setContent(text);
+          setContentAvailable(true) //Permite a conclusão
         } catch (error) {
           setContent('# Erro\n\nNão foi possível carregar a reflexão');
+          setContentAvailable(false) //Bloqueia a conclusão
         } finally {
           setIsLoading(false);
         }
@@ -120,7 +153,7 @@ export default function Home() {
         <div className='mb-10 flex items-center gap-4'>
           <button
             onClick={() => setCurrentStep('calendar')}
-            className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+            className="p-1.5 rounded-md bg-[#FFCB69] hover:bg-[#FFC352] cursor-pointer"
             style={{ color: '#FFFFFF' }}
           >
             <ChevronLeftIcon className="w-5 h-5" />
@@ -161,10 +194,15 @@ export default function Home() {
         )}
         
         <button
-          onClick={handleComplete}
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium transition-colors"
+          onClick={handleCompletion}
+          className={`w-full bg-green-500 hover:bg-green-600 py-3 rounded-lg font-bold transition-colors${
+            contentAvailable 
+              ? 'bg-green-500 hover:bg-green-600 text-white cursor-pointer'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+          disabled={!contentAvailable}  
         >
-          Concluir leitura de hoje
+          {contentAvailable ? 'Concluir leitura de hoje' : 'Conclusão indisponível'}
         </button>
       </div>
     );
@@ -176,7 +214,7 @@ export default function Home() {
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={handlePrevWeek}
-          className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+          className="p-1.5 rounded-md bg-[#FFCB69] hover:bg-[#FFC352] cursor-pointer"
           style={{ color: '#FFFFFF' }}
         >
           <ChevronLeftIcon className="w-5 h-5" />
@@ -226,7 +264,7 @@ export default function Home() {
 
         <button
           onClick={handleNextWeek}
-          className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+          className="p-1.5 rounded-md bg-[#FFCB69] hover:bg-[#FFC352] cursor-pointer"
           style={{ color: '#FFFFFF' }}
         >
           <ChevronRightIcon className="w-5 h-5" />
@@ -235,7 +273,7 @@ export default function Home() {
 
       <button
         onClick={() => setCurrentStep('reflection')}
-        className="w-full py-3 rounded-lg font-bold text-white hover:bg-yellow-600 transition-colors cursor-pointer"
+        className="w-full py-3 rounded-lg font-bold text-white bg-[#FFBC69] hover:bg-[#FFC352] cursor-pointer"
         style={{ backgroundColor: '#FFCB69' }}
       >
         Começar leitura
