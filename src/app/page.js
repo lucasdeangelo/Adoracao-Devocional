@@ -34,56 +34,56 @@ export default function Home() {
   });
 
   // Componente de Perguntas
-  const QuestionStep = () => {
-    const questions = [
-      "Qual motivo me faria levantar da cama e por quê?",
-      "Uma Motivação pra hoje",
-      "Uma murmuração para esquecer",
-    ];
-    return (
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <div className='mb-10 flex items-center gap-4'>
-          <button
-            onClick={() => setCurrentStep('calendar')}
-            className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
-            style={{ color: '#FFFFFF' }}
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
+  // const QuestionStep = () => {
+  //   const questions = [
+  //     "Qual motivo me faria levantar da cama e por quê?",
+  //     "Uma Motivação pra hoje",
+  //     "Uma murmuração para esquecer",
+  //   ];
+  //   return (
+  //     <div className="bg-white p-6 rounded-xl shadow-sm">
+  //       <div className='mb-10 flex items-center gap-4'>
+  //         <button
+  //           onClick={() => setCurrentStep('calendar')}
+  //           className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
+  //           style={{ color: '#FFFFFF' }}
+  //         >
+  //           <ChevronLeftIcon className="w-5 h-5" />
+  //         </button>
 
-          <h3 className="font-nunito font-bold text-xl text-black">
-          {formattedDate.split(' ').map((word, index) => (
-            <span key={index}>
-              {index === 0 ? 
-                word.charAt(0).toUpperCase() + word.slice(1) + ' - ' : 
-                word
-              }
-              {index === 0}
-            </span>
-          ))}
-        </h3>
-        </div>
-        {questions.map((question, index) => (
-          <div key={index} className="mb-6">
-            <label className="block text-gray-700 mb-2 font-medium">{question}</label>
-            <textarea
-              onChange={(e) => setAnswers({...answers, [index]: e.target.value})}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yelllow-500 focus:border-transparent"
-              rows="2"
-              placeholder="Escreva sua resposta..."
-            />
-          </div>
-        ))}
+  //         <h3 className="font-nunito font-bold text-xl text-black">
+  //         {formattedDate.split(' ').map((word, index) => (
+  //           <span key={index}>
+  //             {index === 0 ? 
+  //               word.charAt(0).toUpperCase() + word.slice(1) + ' - ' : 
+  //               word
+  //             }
+  //             {index === 0}
+  //           </span>
+  //         ))}
+  //       </h3>
+  //       </div>
+  //       {questions.map((question, index) => (
+  //         <div key={index} className="mb-6">
+  //           <label className="block text-gray-700 mb-2 font-medium">{question}</label>
+  //           <textarea
+  //             onChange={(e) => setAnswers({...answers, [index]: e.target.value})}
+  //             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yelllow-500 focus:border-transparent"
+  //             rows="2"
+  //             placeholder="Escreva sua resposta..."
+  //           />
+  //         </div>
+  //       ))}
 
-        <button
-          onClick={() => setCurrentStep('reflection')}
-          className="w-full bg-[#FFCB69] text-white py-3 rounded-lg font-bold transition-colors cursor-pointer"
-        >
-          Avançar
-        </button>
-      </div>
-    );
-  };
+  //       <button
+  //         onClick={() => setCurrentStep('reflection')}
+  //         className="w-full bg-[#FFCB69] text-white py-3 rounded-lg font-bold transition-colors cursor-pointer"
+  //       >
+  //         Avançar
+  //       </button>
+  //     </div>
+  //   );
+  // };
 
    // Componente de Reflexão
    const ShowText = () => {
@@ -119,7 +119,7 @@ export default function Home() {
       <div className="bg-white p-6 rounded-xl shadow-sm">
         <div className='mb-10 flex items-center gap-4'>
           <button
-            onClick={() => setCurrentStep('questions')}
+            onClick={() => setCurrentStep('calendar')}
             className="p-1.5 rounded-md bg-[#FFCB69] cursor-pointer"
             style={{ color: '#FFFFFF' }}
           >
@@ -234,7 +234,7 @@ export default function Home() {
       </div>
 
       <button
-        onClick={() => setCurrentStep('questions')}
+        onClick={() => setCurrentStep('reflection')}
         className="w-full py-3 rounded-lg font-bold text-white hover:bg-yellow-600 transition-colors cursor-pointer"
         style={{ backgroundColor: '#FFCB69' }}
       >
@@ -249,7 +249,7 @@ export default function Home() {
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Bom dia! A paz do Senhor</h1>
       
       {currentStep === 'calendar' && <Calendar />}
-      {currentStep === 'questions' && <QuestionStep />}
+      {/* {currentStep === 'questions' && <QuestionStep />} */}
       {currentStep === 'reflection' && <ShowText />}
     </div>
   );
