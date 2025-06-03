@@ -244,7 +244,8 @@ const loadDays = useCallback((direction = 'next') => {
               h2: ({ node, ...props }) => <h2 className="text-xl text-black font-bold mb-4" {...props} />,
               h3: ({ node, ...props }) => <h3 className="text-lg text-black font-bold mb-4" {...props} />,
               p: ({ node, ...props }) => <p className="text-gray-700 mb-4 leading-relaxed" {...props} />, 
-              ul: ({ node, ...props }) => <h1 className="text-gray-700 font-medium mb-4" {...props} />,
+              ul: ({ node, ...props }) => <ul className="text-gray-700 list-disc font-medium mb-4 ml-4" {...props} />,
+              li: ({ node, ...props }) => <li className="text-gray-700 list-decimal font-medium mb-4 ml-4" {...props} />,
               blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#FFCB69] pl-4 bg-gray-50  my-4 text-gray-600" {...props} />,
             }}
           >
