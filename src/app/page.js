@@ -4,6 +4,7 @@ import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, 
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
+import CalendarModal from '../app/components/CalendarModal';
 
 const DAYS_VISIBLE = 7 // Dias inicialmente visíveis
 const BUFFER_DAYS = 5 // Dias extras para pré-carregar
@@ -18,7 +19,14 @@ export default function Home() {
   const [contentAvailable, setContentAvailable] = useState(false);
   const loaderRef = useRef(null)
   const observer = useRef(null)
-   
+  
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  
+  const handleDateSelect = (date) => {
+  setSelectedDate(date);
+  setCurrentStep('reflection'); // Vá direto para o texto do dia
+};
+
 const loadDays = useCallback((direction = 'next') => {
     const newDays = eachDayOfInterval({
       start: direction === 'next' 
@@ -328,11 +336,28 @@ const loadDays = useCallback((direction = 'next') => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 max-w-screen-md mx-auto">
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">Bom dia! A paz do Senhor</h1>
-      
+      <div className='flex justify-between items-center'>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">Bom dia! A paz do Senhor</h1>
+        <button
+          onClick={() => setIsCalendarModalOpen(true)}
+          className="px-3 py-1 mb-3.5 rounded-xl bg-[#FFCB69] hover:bg-[#FFC352] transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </button>
+      </div>
+
       {currentStep === 'calendar' && <Calendar />}
       {/* {currentStep === 'questions' && <QuestionStep />} */}
       {currentStep === 'reflection' && <ShowText />}
+      
+      <CalendarModal
+        isOpen={isCalendarModalOpen}
+        onClose={() => setIsCalendarModalOpen(false)}
+        onDateSelect={handleDateSelect}
+        completedDates={completedDates}
+      />
     </div>
   );
 }
