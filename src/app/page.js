@@ -1,10 +1,13 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameDay } from 'date-fns'
+import Image from 'next/image';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import CalendarModal from '../app/components/CalendarModal';
+import ThemeToggle from '../app/components/ThemeToggle';
+import logo from '../../public/assets/logo.png';
 
 const DAYS_VISIBLE = 7 // Dias inicialmente visíveis
 const BUFFER_DAYS = 5 // Dias extras para pré-carregar
@@ -19,7 +22,7 @@ export default function Home() {
   const [contentAvailable, setContentAvailable] = useState(false);
   const loaderRef = useRef(null)
   const observer = useRef(null)
-  
+
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   
   const handleDateSelect = (date) => {
@@ -208,7 +211,7 @@ const loadDays = useCallback((direction = 'next') => {
   
 
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm">
+      <div className="p-6 rounded-xl">
         <div className='mb-10 flex items-center gap-4'>
           <button
             onClick={() => setCurrentStep('calendar')}
@@ -218,7 +221,7 @@ const loadDays = useCallback((direction = 'next') => {
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
 
-          <h3 className="font-nunito font-bold text-xl text-black">
+          <h3 className="font-nunito font-bold text-xl ">
           {formattedDate.split(' ').map((word, index) => (
             <span key={index}>
               {index === 0 ? 
@@ -232,21 +235,21 @@ const loadDays = useCallback((direction = 'next') => {
         </div>
         {isLoading ? (
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-6  rounded w-1/2"></div>
+            <div className="h-4  rounded w-full"></div>
+            <div className="h-4  rounded w-3/4"></div>
           </div>
         ) : (
           <ReactMarkdown
             
             components={{
-              h1: ({ node, ...props }) => <h1 className="text-3xl text-black font-bold mb-4" {...props} />,
-              h2: ({ node, ...props }) => <h2 className="text-xl text-black font-bold mb-4" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-lg text-black font-bold mb-4" {...props} />,
-              p: ({ node, ...props }) => <p className="text-gray-700 mb-4 leading-relaxed" {...props} />, 
-              ul: ({ node, ...props }) => <ul className="text-gray-700 list-disc font-medium mb-4 ml-4" {...props} />,
-              li: ({ node, ...props }) => <li className="text-gray-700 list-decimal font-medium mb-4 ml-4" {...props} />,
-              blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#FFCB69] pl-4 bg-gray-50  my-4 text-gray-600" {...props} />,
+              h1: ({ node, ...props }) => <h1 className="text-3xl  font-bold mb-4" {...props} />,
+              h2: ({ node, ...props }) => <h2 className="text-xl  font-bold mb-4" {...props} />,
+              h3: ({ node, ...props }) => <h3 className="text-lg  font-bold mb-4" {...props} />,
+              p: ({ node, ...props }) => <p className=" mb-4 leading-relaxed" {...props} />, 
+              ul: ({ node, ...props }) => <ul className=" list-disc font-medium mb-4 ml-4" {...props} />,
+              li: ({ node, ...props }) => <li className=" list-decimal font-medium mb-4 ml-4" {...props} />,
+              blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-[#FFCB69] pl-4   my-4 " {...props} />,
             }}
           >
             {content}
@@ -270,11 +273,19 @@ const loadDays = useCallback((direction = 'next') => {
 
   // Componente do calendário horizontal
   const Calendar = () => {
+    // Estado para controlar o dark mode
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Efeito para detectar dark mode apenas no cliente
+  useEffect(() => {
+    setIsDarkMode(document.documentElement.getAttribute('data-theme') === 'dark');
+  }, []);
+
   return (
-    <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
+    <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-4">       
         <div className="flex-1 mx-2 overflow-hidden">
-          <div className="font-nunito font-bold text-black text-center text-lg mb-2">
+          <div className="font-nunito font-bold text-center text-lg mb-2">
             {visibleMonth}
           </div>
           
@@ -298,11 +309,16 @@ const loadDays = useCallback((direction = 'next') => {
                     flex flex-col items-center justify-center 
                     rounded-lg text-sm transition-all relative
                     ${isTodayDate ? 'font-bold' : 'font-semibold'}
-                    ${isSelected && !isTodayDate ? 'bg-gray-200' : 'bg-white'}
-                  `}
+                    ${isSelected && !isTodayDate ? 'btn-selected' : 'bg-secondary'}
+                    ${isTodayDate 
+                        ? 'text-white' // Sempre branco para o dia atual
+                        : isDarkMode 
+                          ? 'text-darkmode' // Branco no dark mode
+                          : 'text-primary' // Preto no light mode
+                      }
+                    `}
                   style={{
-                    backgroundColor: isTodayDate ? '#FFCB69' : undefined,
-                    color: isTodayDate ? 'white' : 'black'
+                    backgroundColor: isTodayDate ? '#FFCB69' : undefined                    
                   }}
                 >
                   <span className="font-nunito text-xs">
@@ -336,17 +352,21 @@ const loadDays = useCallback((direction = 'next') => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 max-w-screen-md mx-auto">
+    <div className="min-h-screen p-4 md:p-6 max-w-screen-md mx-auto">
       <div className='flex justify-between items-center'>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">Bom dia! A paz do Senhor</h1>
-        <button
-          onClick={() => setIsCalendarModalOpen(true)}
-          className="px-3 py-1 mb-3.5 rounded-xl bg-[#FFCB69] hover:bg-[#FFC352] transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </button>
+        <Image src={logo} width={100} height={100} alt='a' onClick={() => setCurrentStep('calendar')} className='cursor-pointer'/>
+        <div className='flex gap-3 justify-center items-center mb-3.5'>
+          <ThemeToggle/>
+
+          <button
+            onClick={() => setIsCalendarModalOpen(true)}
+            className="px-3 py-1 mb-3.5 rounded-xl bg-[#FFCB69] hover:bg-[#FFC352] transition-colors cursor-pointer"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {currentStep === 'calendar' && <Calendar />}

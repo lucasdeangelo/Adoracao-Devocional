@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} ${nunito.variable} font-sans`}>
+        className={`${poppins.variable} ${nunito.variable} font-sans bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300`}>
         {children}
       </body>
     </html>
