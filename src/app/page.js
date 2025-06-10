@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
+import { supabase } from '../lib/supabase';
 import CalendarModal from '../app/components/CalendarModal';
 import ThemeToggle from '../app/components/ThemeToggle';
 import logo from '../../public/assets/logo.png';
@@ -20,6 +21,7 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState('calendar');
   const [answers, setAnswers] = useState({});
   const [contentAvailable, setContentAvailable] = useState(false);
+  const [reflectionDates, setReflectionDates] = useState([]);
   const loaderRef = useRef(null)
   const observer = useRef(null)
 
@@ -183,31 +185,34 @@ const loadDays = useCallback((direction = 'next') => {
     const [isLoading, setIsLoading] = useState(true);
     
     useEffect(() => {
-      const fetchReflection = async () => {
-        try {
-          const dateString = format(selectedDate, 'yyyy-MM-dd');
-          const response = await fetch(`/reflections/${dateString}.md`)
+    const fetchReflection = async () => {
+      try {
+        const dateString = format(selectedDate, 'yyyy-MM-dd');
+        const { data, error } = await supabase.storage
+          .from('reflections')
+          .download(`${dateString}.md`);
 
-  
-          if (!response.ok) {
-            setContent('# Reflexão do Dia\n\nVolte amanhã para uma nova reflexão! 🙏');
-            setContentAvailable(false) //Bloqueia a conclusão
-            return;
-          }
-  
-          const text = await response.text();
-          setContent(text);
-          setContentAvailable(true) //Permite a conclusão
-        } catch (error) {
-          setContent('# Erro\n\nNão foi possível carregar a reflexão');
-          setContentAvailable(false) //Bloqueia a conclusão
-        } finally {
-          setIsLoading(false);
+        if (error || !data) {
+          setContent('# Reflexão do Dia\n\nVolte amanhã para uma nova reflexão! 🙏');
+          setContentAvailable(false);
+          return;
         }
-      };
-  
-      fetchReflection();
-    });
+        const text = await data.text();
+
+        setContent(data.content);
+        setContentAvailable(true);
+        setContent(text);
+
+      } catch (error) {
+        setContent('# Erro\n\nNão foi possível carregar a reflexão');
+        setContentAvailable(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReflection();
+  }, []);
   
 
     return (
@@ -293,6 +298,7 @@ const loadDays = useCallback((direction = 'next') => {
             className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
           >
             {days.map((day, index) => {
+            const hasReflection = reflectionDates.some(d => isSameDay(d, day));
             const isCompleted = completedDates.some(d => isSameDay(d, day));
             const isTodayDate = isToday(day);
             const isSelected = isSameDay(day, selectedDate);
@@ -301,6 +307,7 @@ const loadDays = useCallback((direction = 'next') => {
               <div 
                 key={day.toISOString()}
                 className="min-w-[17%] flex-shrink-0" // Mantém 5 dias visíveis no mobile
+                onClick={() => hasReflection && isCompleted && handleDateSelect(day)}
               >
                 <button
                   onClick={() => setSelectedDate(day)}
@@ -328,8 +335,8 @@ const loadDays = useCallback((direction = 'next') => {
                     {format(day, 'd')}
                   </span>
                   {isCompleted && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full" />
+                    <div className="absolute -top-[0px] -right-1 w-2.5 h-2.5 bg-white rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
                     </div>
                   )}
                 </button>
