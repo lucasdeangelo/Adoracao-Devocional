@@ -9,7 +9,10 @@ export default function Admin() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if(password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+          sessionStorage.setItem('admin-auth', 'true');
           router.push('/admin/dashboard');
+        } else {
+          alert("Senha incorreta!");
         }
     };
     

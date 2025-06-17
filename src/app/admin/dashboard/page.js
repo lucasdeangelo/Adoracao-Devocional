@@ -1,12 +1,21 @@
 'use client'
 import AdminLayout from '../../components/adminLayout';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase'
 
 export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState('');
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('');
+  const router = useRouter();
+  
+  useEffect(() => {
+    const isAuthenticated = sessionStorage.getItem('admin-auth');
+    if (isAuthenticated !== 'true') {
+      router.push('/admin'); 
+    }
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
