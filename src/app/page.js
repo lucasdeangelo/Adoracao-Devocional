@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isToday, isSameDay } from 'date-fns'
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation'
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
@@ -10,6 +12,9 @@ import CalendarModal from '../app/components/CalendarModal';
 import ThemeToggle from '../app/components/ThemeToggle';
 import WhatsAppButton from '../app/components/whatsAppButton';
 import logo from '../../public/assets/logo.png';
+import { getArticlesList } from '../lib/supabase';
+import ArticleCard from '../app/components/ArticleCard';
+import Header from './components/Header';
 
 const DAYS_VISIBLE = 7 // Dias inicialmente visíveis
 const BUFFER_DAYS = 5 // Dias extras para pré-carregar
@@ -358,24 +363,55 @@ const loadDays = useCallback((direction = 'next') => {
   );
 };
 
+  const [articles, setArticles] = useState([])
+
+  useEffect(() => {
+    async function fetchArticles() {
+      const files = await getArticlesList()
+
+      const items = await Promise.all(
+        files.map(async (file) => {
+          const slug = file.name.replace('.md', '')
+
+          const { data } = await supabase
+            .storage
+            .from('articles')
+            .download(file.name)
+
+          const text = await data.text()
+
+          const titleMatch = text.match(/^#\s(.+)/m)
+          const tagMatch = text.match(/^tag:\s*(\w+)/im)
+          const title = titleMatch ? titleMatch[1] : slug
+          const tag = tagMatch ? tagMatch[1].toLowerCase() : 'list'
+
+          const preview = text.slice(0, 200).replace(/\n/g, ' ')
+          const date = file.updated_at || new Date().toISOString()
+
+          return {
+            slug,
+            title,
+            preview,
+            date,
+            tag
+          }
+        })
+      )
+
+      setArticles(items)
+    }
+    
+    fetchArticles()
+  }, [])  
+  
+  const headline = articles.find(article => article.tag === 'headline')
+  const mainArticles = articles.filter(article => article.tag === 'main')
+  const listArticles = articles.filter(article => article.tag === 'list')
+  
 
   return (
     <div className="min-h-screen p-4 md:p-6 max-w-screen-md mx-auto relative">
-      <div className='flex justify-between items-center'>
-        <Image src={logo} width={100} height={100} alt='a' onClick={() => setCurrentStep('calendar')} className='cursor-pointer'/>
-        <div className='flex gap-3 justify-center items-center mb-3.5'>
-          <ThemeToggle/>
-
-          <button
-            onClick={() => setIsCalendarModalOpen(true)}
-            className="px-3 py-1 mb-3.5 rounded-xl bg-[#FFCB69] hover:bg-[#FFC352] transition-colors cursor-pointer"
-            >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      <Header onCalendarClick={() => setIsCalendarModalOpen(true)}/>
 
       {currentStep === 'calendar' && <Calendar />}
       {/* {currentStep === 'questions' && <QuestionStep />} */}
@@ -387,6 +423,51 @@ const loadDays = useCallback((direction = 'next') => {
         onDateSelect={handleDateSelect}
         completedDates={completedDates}
       />
+      <div className="max-w-6xl mx-auto p-4">
+        {/* Headline */}
+        {headline && (
+          <ArticleCard
+            key={headline.slug}
+            title={headline.title}
+            preview={headline.preview}
+            slug={headline.slug}
+            date={headline.date}
+            variant="headline"
+          />
+        )}
+
+        {/* Main articles */}
+        {mainArticles.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {mainArticles.map(article => (
+              <ArticleCard
+                key={article.slug}
+                title={article.title}
+                preview={article.preview}
+                slug={article.slug}
+                date={article.date}
+                variant="main"
+              />
+            ))}
+          </div>
+        )}
+
+        {/* List articles */}
+        {listArticles.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {listArticles.map(article => (
+              <ArticleCard
+                key={article.slug}
+                title={article.title}
+                preview={article.preview}
+                slug={article.slug}
+                date={article.date}
+                variant="list"
+              />
+            ))}
+          </div>
+        )}
+      </div>
       <WhatsAppButton />
     </div>
   );
