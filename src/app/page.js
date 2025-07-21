@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import { supabase } from '../lib/supabase';
 import CalendarModal from '../app/components/CalendarModal';
 import ThemeToggle from '../app/components/ThemeToggle';
+import WhatsAppButton from '../app/components/whatsAppButton';
 import logo from '../../public/assets/logo.png';
 
 const DAYS_VISIBLE = 7 // Dias inicialmente visíveis
@@ -359,7 +360,7 @@ const loadDays = useCallback((direction = 'next') => {
 
 
   return (
-    <div className="min-h-screen p-4 md:p-6 max-w-screen-md mx-auto">
+    <div className="min-h-screen p-4 md:p-6 max-w-screen-md mx-auto relative">
       <div className='flex justify-between items-center'>
         <Image src={logo} width={100} height={100} alt='a' onClick={() => setCurrentStep('calendar')} className='cursor-pointer'/>
         <div className='flex gap-3 justify-center items-center mb-3.5'>
@@ -386,6 +387,7 @@ const loadDays = useCallback((direction = 'next') => {
         onDateSelect={handleDateSelect}
         completedDates={completedDates}
       />
+      <WhatsAppButton />
     </div>
   );
 }
