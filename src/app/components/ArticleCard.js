@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import useDarkMode from '../hooks/useDarkMode';
+import { stripMarkdown } from '../utils/stripMarkdown';
 
 export default function ArticleCard({ title, preview, slug, date, variant = 'list' }) {
   const [darkMode] = useDarkMode();
@@ -42,9 +43,11 @@ export default function ArticleCard({ title, preview, slug, date, variant = 'lis
       <div className={clsx(baseClasses, variantStyles[variant])}>
         <div className="flex-grow">
           <h2 className={titleClasses}>{title}</h2>
-          <p className="text-sm text-gray-400 mb-2">{formattedDate}</p>
+          <div className='flex gap-1'>
+            <p className="text-sm text-gray-400 mb-2">{formattedDate} </p>             
+          </div>
           <p className={clsx(previewClasses, 'line-clamp-3')}>
-            {preview}...
+            {stripMarkdown(preview)}...
           </p>
         </div>
       </div>
