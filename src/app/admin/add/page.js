@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminLayout from '../../components/adminLayout';
-import { uploadReflection } from '@/lib/supabase';
+import { uploadReflection } from '../../../lib/supabase';
 
 export default function AddReflection() {
   const router = useRouter();

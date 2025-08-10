@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react';
-import { uploadArticle } from '@/lib/supabase';
+import { uploadArticle } from '../../lib/supabase';
 
 export default function ArticleUploadModal({ isOpen, onClose, onSuccess }) {
   const [title, setTitle] = useState('');

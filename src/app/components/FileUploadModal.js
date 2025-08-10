@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '../../lib/supabase';
 
 export default function FileUploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [file, setFile] = useState(null);
